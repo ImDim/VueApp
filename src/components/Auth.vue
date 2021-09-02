@@ -24,7 +24,23 @@
         class="mt-2"
       ></v-text-field>
 
-      <v-btn depressed block large color="primary" class="mt-4" @click="logIn">
+      <vue-recaptcha
+        ref="recaptcha"
+        :class="b('recaptcha')"
+        :sitekey="recaptchaKey"
+        @verify="verifyRecaptcha"
+        @expired="onCaptchaExpired"
+      />
+
+      <v-btn
+        depressed
+        block
+        large
+        :disabled="false && !recaptchaToken"
+        color="primary"
+        class="mt-4"
+        @click="logIn"
+      >
         Войти
       </v-btn>
     </v-form>
@@ -35,10 +51,13 @@
 import API from "@/api";
 import formMixin from "@/mixins/formMixin.vue";
 import authMixin from "@/mixins/authMixin.vue";
+import VueRecaptcha from "vue-recaptcha";
 
 export default {
   name: "auth",
   mixins: [formMixin, authMixin],
+
+  components: { VueRecaptcha },
 
   data: () => ({
     username: null,
@@ -48,15 +67,29 @@ export default {
       required: (value) => !!value || "Обязательно",
       min: (v) => v.length >= 4 || "Минимум 4 символа",
     },
+    recaptchaToken: "",
   }),
 
+  computed: {
+    recaptchaKey() {
+      return process.env.VUE_APP_RECAPTCHA_KEY;
+    },
+  },
+
   methods: {
+    verifyRecaptcha(recaptchaToken) {
+      this.recaptchaToken = recaptchaToken;
+    },
+
     async logIn() {
       try {
         const response = await API.auth.login({
           username: this.username,
           password: this.password,
+          recaptchaToken: this.recaptchaToken,
         });
+
+        console.info(response);
 
         const { data } = response;
 
@@ -65,9 +98,14 @@ export default {
 
         this.$router.push({ name: "posts" });
       } catch (error) {
+        console.info(error);
         this.onResponseError(error);
         return;
       }
+    },
+
+    onCaptchaExpired() {
+      this.$refs.recaptcha.reset();
     },
   },
 
@@ -93,6 +131,14 @@ export default {
 
   &__icon {
     font-size: 80px;
+  }
+
+  &__recaptcha {
+    margin: 0 auto;
+    margin-top: 10px;
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: center;
   }
 }
 </style>

@@ -4,6 +4,12 @@ module.exports = app => {
     check
   } = require("express-validator")
 
+
+  /* const Recaptcha = require('express-recaptcha').RecaptchaV3;
+  const recaptcha = new Recaptcha('6Let-jwcAAAAAAWcTuKMJkJkJvu9d0Xwt-SHdCWg', '6Let-jwcAAAAALaNpc0Ju_vEIvsb8McQRo3ob0-D'); */
+
+  const recaptchaMiddleware = require('../middleware/recaptcha')
+
   //const authMiddleware = require('../middleware/authMiddleware')
   const roleMiddleware = require('../middleware/role')
 
@@ -17,7 +23,7 @@ module.exports = app => {
     })
   ], auth.registration);
 
-  router.post('/login', auth.login);
+  router.post('/login', recaptchaMiddleware, auth.login);
 
   router.get('/users', roleMiddleware(["ADMIN"]), auth.getUsers);
 
