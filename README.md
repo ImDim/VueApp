@@ -1,2 +1,4 @@
 # VueApp
-Express, MongoDB, VueJS, Vuetifyjs app example
+Node.js MongoDB Rest CRUD API
+
+VueJS, VuetifyJs
