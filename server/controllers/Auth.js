@@ -35,11 +35,16 @@ exports.registration = async (req, res) => {
 
     const {
       username,
+      email,
       password
     } = req.body;
 
     const candidate = await User.findOne({
       username
+    });
+
+    const foundMail = await User.findOne({
+      email
     });
 
     if (candidate) {
@@ -48,20 +53,30 @@ exports.registration = async (req, res) => {
       })
     }
 
+    if (foundMail) {
+      return res.status(400).json({
+        message: "Пользователь с таким email уже существует"
+      })
+    }
+
     const hashPassword = bcrypt.hashSync(password, 7);
     const userRole = await Role.findOne({
       value: "USER"
     });
+
     const user = new User({
       username,
       password: hashPassword,
-      roles: [userRole.value]
+      roles: [userRole.value],
+      email
     });
 
     await user.save();
-    return res.json({
+    /* return res.json({
       message: "Пользователь успешно зарегистрирован"
-    });
+    }); */
+
+    exports.login(req, res);
 
   } catch (e) {
     console.log(e);

@@ -12,12 +12,34 @@
       ></v-text-field>
 
       <v-text-field
+        v-if="!isAuth"
+        v-model="email"
+        :rules="[emailValidate]"
+        label="Email"
+        required
+      ></v-text-field>
+
+      <v-text-field
         v-model="password"
         :append-icon="passFieldShow ? 'mdi-eye' : 'mdi-eye-off'"
         :rules="[rules.required, rules.min]"
         :type="passFieldShow ? 'text' : 'password'"
         name="password"
         label="Введите пароль"
+        hint="Не менее 4 симвлов и не более 10"
+        counter
+        @click:append="passFieldShow = !passFieldShow"
+        class="mt-2"
+      ></v-text-field>
+
+      <v-text-field
+        v-if="!isAuth"
+        v-model="repeatPassword"
+        :append-icon="passFieldShow ? 'mdi-eye' : 'mdi-eye-off'"
+        :rules="[rules.required, rules.min, comparePass]"
+        :type="passFieldShow ? 'text' : 'password'"
+        name="repeatPassword"
+        label="Повторите пароль"
         hint="Не менее 4 симвлов и не более 10"
         counter
         @click:append="passFieldShow = !passFieldShow"
@@ -43,6 +65,25 @@
       >
         Войти
       </v-btn>
+
+      <div
+        :class="[
+          b('footer'),
+          'd-flex',
+          'justify-center',
+          'align-center',
+          'mt-4',
+        ]"
+      >
+        <template v-if="isAuth">
+          <div class="mr-2">Нет аккаунта?</div>
+          <a href="#" @click.prevent="changeFormType">Зарегистрироваться</a>
+        </template>
+        <template v-else>
+          <div class="mr-2">Уже зарегистрированы?</div>
+          <a href="#" @click.prevent="changeFormType">Авторизация</a>
+        </template>
+      </div>
     </v-form>
   </div>
 </template>
@@ -60,36 +101,67 @@ export default {
   components: { VueRecaptcha },
 
   data: () => ({
+    cardType: "auth",
     username: null,
+    email: null,
     password: "",
+    repeatPassword: "",
     passFieldShow: false,
+    recaptchaToken: "",
     rules: {
       required: (value) => !!value || "Обязательно",
-      min: (v) => v.length >= 4 || "Минимум 4 символа",
+      min: (value) => value.length >= 4 || "Минимум 4 символа",
     },
-    recaptchaToken: "",
   }),
 
   computed: {
+    isAuth() {
+      return this.cardType === "auth";
+    },
+
     recaptchaKey() {
       return process.env.VUE_APP_RECAPTCHA_KEY;
     },
   },
 
   methods: {
+    changeFormType() {
+      this.cardType = this.cardType === "auth" ? "reg" : "auth";
+    },
+
+    comparePass(value) {
+      return value === this.password || "Пароли не совпадают";
+    },
+
+    emailValidate(value) {
+      var reg =
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+      return reg.test(value) || "Введите корректный e-mail";
+    },
+
     verifyRecaptcha(recaptchaToken) {
       this.recaptchaToken = recaptchaToken;
     },
 
     async logIn() {
-      try {
-        const response = await API.auth.login({
-          username: this.username,
-          password: this.password,
-          recaptchaToken: this.recaptchaToken,
+      if (!this.comparePass(this.repeatPassword)) {
+        this.responseNotify({
+          message: "Пароли не совпадают!",
+          type: "error",
         });
 
-        console.info(response);
+        return;
+      }
+
+      const API_METHOD = this.isAuth ? "login" : "registration";
+
+      try {
+        const response = await API.auth[API_METHOD]({
+          username: this.username,
+          password: this.password,
+          email: this.email,
+          recaptchaToken: this.recaptchaToken,
+        });
 
         const { data } = response;
 
@@ -100,6 +172,7 @@ export default {
       } catch (error) {
         console.info(error);
         this.onResponseError(error);
+        this.$refs.recaptcha.reset();
         return;
       }
     },
@@ -122,7 +195,7 @@ export default {
 .auth {
   position: relative;
   top: 200px;
-  width: 400px;
+  width: 360px;
   margin: 0 auto;
   padding: 25px;
   border: 1px solid #ececec;

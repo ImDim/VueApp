@@ -15,7 +15,7 @@ module.exports = app => {
 
   var router = require("express").Router();
 
-  router.post('/registration', [
+  router.post('/registration', recaptchaMiddleware, [
     check('username', "Имя пользователя не может быть пустым").notEmpty(),
     check('password', "Пароль должен быть больше 4 и меньше 10 символов").isLength({
       min: 4,
