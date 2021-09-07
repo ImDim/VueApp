@@ -73,7 +73,7 @@
 </template>
 
 <script>
-import API from "@/api";
+import POST_API from "@api/posts.ts";
 import { mapGetters, mapActions } from "vuex";
 import formMixin from "@/mixins/formMixin.vue";
 import pageMixin from "@/mixins/pageMixin.vue";
@@ -161,7 +161,7 @@ export default {
       }
 
       try {
-        await API.posts.delete(id);
+        await POST_API.delete(id);
         this.refreshList();
       } catch (error) {
         this.onResponseError(error);

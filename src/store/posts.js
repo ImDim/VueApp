@@ -1,4 +1,4 @@
-import API from '@/api'
+import POST_API from "@api/posts.ts";
 
 export default {
   state: {
@@ -37,7 +37,7 @@ export default {
     }, params) {
       let response;
       try {
-        response = await API.posts.getPosts(params);
+        response = await POST_API.getPosts(params);
       } catch (error) {
         return;
       }
@@ -50,7 +50,7 @@ export default {
       commit
     }) {
       try {
-        await API.posts.deleteAll();
+        await POST_API.deleteAll();
         commit('setPostsData', {
           posts: [],
           totalPages: 0,
@@ -69,7 +69,7 @@ export default {
       title
     }) {
       try {
-        const response = await API.posts.findByTitle(title);
+        const response = await POST_API.findByTitle(title);
         commit('setPostsData', response.data);
         console.log(response.data);
       } catch (error) {

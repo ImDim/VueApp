@@ -50,7 +50,7 @@
 </template>
 
 <script>
-import API from "@/api";
+import POST_API from "@api/posts.ts";
 import formMixin from "@/mixins/formMixin.vue";
 
 export default {
@@ -67,7 +67,7 @@ export default {
   methods: {
     async getPost(id) {
       try {
-        const response = await API.posts.get(id);
+        const response = await POST_API.get(id);
         this.post = response.data;
         console.log(response.data);
       } catch (error) {
@@ -85,7 +85,7 @@ export default {
       };
 
       try {
-        const response = await API.posts.update(this.post.id, post);
+        const response = await POST_API.update(this.post.id, post);
         this.post.published = status;
         console.log(response);
       } catch (error) {
@@ -100,7 +100,7 @@ export default {
 
     async updatePost() {
       try {
-        const response = await API.posts.update(this.post.id, this.post);
+        const response = await POST_API.update(this.post.id, this.post);
         console.log(response);
       } catch (error) {
         this.onResponseError(error);
@@ -124,7 +124,7 @@ export default {
       }
 
       try {
-        const response = await API.posts.delete(this.post.id);
+        const response = await POST_API.delete(this.post.id);
         console.log(response);
         this.$router.push({ name: "posts" });
       } catch (error) {

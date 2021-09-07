@@ -41,7 +41,7 @@
 </template>
 
 <script>
-import API from "@/api";
+import POST_API from "@api/posts.ts";
 import formMixin from "@/mixins/formMixin.vue";
 
 export default {
@@ -67,7 +67,7 @@ export default {
       };
 
       try {
-        const response = await API.posts.create(post);
+        const response = await POST_API.create(post);
         const { data } = response;
         this.post.id = data.id;
         this.submitted = true;

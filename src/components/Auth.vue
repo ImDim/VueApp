@@ -89,7 +89,7 @@
 </template>
 
 <script>
-import API from "@/api";
+import AUTH_API from "@api/auth.ts";
 import formMixin from "@/mixins/formMixin.vue";
 import authMixin from "@/mixins/authMixin.vue";
 import VueRecaptcha from "vue-recaptcha";
@@ -156,7 +156,7 @@ export default {
       const API_METHOD = this.isAuth ? "login" : "registration";
 
       try {
-        const response = await API.auth[API_METHOD]({
+        const response = await AUTH_API[API_METHOD]({
           username: this.username,
           password: this.password,
           email: this.email,
